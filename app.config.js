@@ -67,7 +67,7 @@ export default {
         "expo-image-picker",
         {
           photosPermission:
-            "Rendezvouscare accesses your photos to let you share them with your friends.",
+            "VTB accesses your photos to let you share them with your riders.",
         },
       ],
       [
