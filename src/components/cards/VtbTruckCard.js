@@ -2,7 +2,7 @@ import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import { formatPriceRange } from "../../Library/Common";
+import { formatToNaira } from "../../Library/Common";
 import { COLORS } from "../../themes/themes";
 import { windowWidth } from "../../utils/Dimensions";
 import AvailabilityCard from "./AvailabilityCard";
@@ -29,7 +29,7 @@ const VtbTruckCard = ({ props, onPress }) => {
               style={{ marginRight: 7 }}
             />
             <Text style={styles.truckName}>
-              {formatPriceRange(props?.price?.[0])}
+              BaseFare: {formatToNaira(props?.price?.[0])}/km
             </Text>
           </View>
         </View>

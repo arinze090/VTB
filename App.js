@@ -6,17 +6,17 @@ import { Provider as ReduxStoreProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "./src/redux/store";
 
-import AppNavigation from "./src/navigation/AppNavigator";
+import MainNavigator from "./src/navigation/MainNavigator";
 
 LogBox.ignoreAllLogs();
 
-export default function App({}) {
+export default function App() {
   return (
     <SafeAreaProvider>
       <ReduxStoreProvider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <NavigationContainer>
-            <AppNavigation />
+            <MainNavigator />
           </NavigationContainer>
         </PersistGate>
       </ReduxStoreProvider>

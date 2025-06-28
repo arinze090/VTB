@@ -14,23 +14,24 @@ export const checkUserProfile = async (dispatch, getUser, axiosInstance) => {
   }
 };
 
-export const checkUserPreferences = async (
+export  const fetchTruckListings = async (
   axiosInstance,
-  userId,
   dispatch,
-  saveUserPreferences
+  saveTruckListings
 ) => {
   try {
-    const preferenceResponse = await axiosInstance({
-      url: `matchmaking/preference/${userId}`,
+    await axiosInstance({
+      url: "api/listings/all-offerings",
       method: "GET",
-    });
-
-    if (preferenceResponse?.data) {
-      console.log("checkUserPreferences res", preferenceResponse?.data);
-      dispatch(saveUserPreferences(preferenceResponse?.data));
-    }
+    })
+      .then((res) => {
+        console.log("fetchTruckListings res", res?.data);
+        dispatch(saveTruckListings(res?.data?.data));
+      })
+      .catch((err) => {
+        console.log("fetchTruckListings err", err?.response?.data);
+      });
   } catch (error) {
-    console.error("User preference check error:", error);
+    console.log("fetchTruckListings error", error);
   }
 };

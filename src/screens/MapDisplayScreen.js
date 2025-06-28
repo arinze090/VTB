@@ -1,22 +1,42 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useDispatch, useSelector } from "react-redux";
 
+import MapTruckCard from "../components/cards/MapTruckCard";
 import HeaderTitle from "../components/common/HeaderTitle";
-import SearchBar from "../components/search/SearchBar";
+import SafeAreaViewComponent from "../components/common/SafeAreaViewComponent";
 import {
   formatDistance,
   formatDuration,
   formatPerMinute,
   formatToNaira,
+  getDistanceFromLatLonInKm,
 } from "../Library/Common";
-import { windowHeight } from "../utils/Dimensions";
-import SafeAreaViewComponent from "../components/common/SafeAreaViewComponent";
+import { COLORS } from "../themes/themes";
+import { windowHeight, windowWidth } from "../utils/Dimensions";
 
 const MapDisplayScreen = ({ route, navigation }) => {
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
+  const mapRef = useRef(null);
+
+  const reduxTruckListings = state?.user?.truckListings;
+  console.log("reduxTruckListings", reduxTruckListings);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const mapRef = useRef(null);
+
+  const [selectedTruck, setSelectedTruck] = useState(null);
+  const [showCarCards, setShowCarCards] = useState(false);
 
   // Add proper default values to prevent errors with undefined coordinates
   const item = route?.params || {};
@@ -73,7 +93,7 @@ const MapDisplayScreen = ({ route, navigation }) => {
       // If we have route coordinates, fit to those
       if (routeCoords?.length > 0) {
         setTimeout(() => {
-          mapRef.current.fitToCoordinates(routeCoords, {
+          mapRef?.current.fitToCoordinates(routeCoords, {
             edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
             animated: true,
           });
@@ -90,6 +110,101 @@ const MapDisplayScreen = ({ route, navigation }) => {
       }
     }
   }, [loading, error, routeCoords, pickup, dropoff]);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     dispatch(fetchTruckListings(axiosInstance, dispatch, saveTruckListings));
+  //   }, 15000);
+
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  // Show car cards when coordinates are valid and trucks are available
+  useEffect(() => {
+    if (!loading && !error && nearbyTrucks?.length > 0) {
+      setShowCarCards(true);
+    }
+  }, [loading, error, nearbyTrucks]);
+
+  // Calculate initial region if no route coordinates
+  const initialRegion = {
+    latitude: pickup?.latitude || 0,
+    longitude: pickup?.longitude || 0,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  };
+
+  const nearbyTrucks = reduxTruckListings?.filter((truck) => {
+    const truckLocation = truck?.ListingLocation?.location?.[0];
+    const isOnline = truck?.ListingLocation?.onlineStatus;
+    if (!truckLocation || !isOnline) return false;
+
+    const distance = getDistanceFromLatLonInKm(
+      pickup?.latitude,
+      pickup?.longitude,
+      truckLocation?.latitude,
+      truckLocation?.longitude
+    );
+
+    console.log("distance to", truck?.car_name, "is", distance, "km");
+
+    return distance <= 10;
+  });
+
+  const handleTruckSelect = (truck) => {
+    setSelectedTruck(truck);
+
+    // Focus on the selected truck on the map
+    const truckCoords = truck?.ListingLocation?.location?.[0];
+    if (truckCoords && mapRef.current) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: truckCoords.latitude,
+          longitude: truckCoords.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        },
+        1000
+      );
+    }
+  };
+
+  const handleBookTruck = () => {
+    if (selectedTruck) {
+      console.log("djdhdh");
+      // Navigate to booking confirmation or next screen
+      navigation.navigate("TruckDetails", {
+        selectedTruck,
+        pickup,
+        dropoff,
+        routeInfo,
+      });
+    }
+  };
+
+  const renderTruckCard = ({ item, index }) => {
+    const truckLocation = item?.ListingLocation?.location?.[0];
+    const distance = getDistanceFromLatLonInKm(
+      pickup?.latitude,
+      pickup?.longitude,
+      truckLocation?.latitude,
+      truckLocation?.longitude
+    );
+
+    const isSelected = selectedTruck?.id === item?.id;
+    const estimatedTime = Math.round(distance * 2);
+
+    return (
+      <MapTruckCard
+        key={index}
+        props={item}
+        isSelected={isSelected}
+        onPress={() => handleTruckSelect(item)}
+        distance={distance}
+        routeInfo={routeInfo}
+      />
+    );
+  };
 
   // Display loading indicator or error
   if (loading) {
@@ -109,14 +224,6 @@ const MapDisplayScreen = ({ route, navigation }) => {
     );
   }
 
-  // Calculate initial region if no route coordinates
-  const initialRegion = {
-    latitude: pickup?.latitude || 0,
-    longitude: pickup?.longitude || 0,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
-
   return (
     <SafeAreaViewComponent style={styles.container}>
       <HeaderTitle
@@ -124,7 +231,7 @@ const MapDisplayScreen = ({ route, navigation }) => {
         leftIcon="arrow-back-outline"
       />
       {/* ✅ Route Information Card */}
-      {routeInfo && (
+      {/* {routeInfo && (
         <View style={styles.routeInfoCard}>
           <View style={styles.routeInfoRow}>
             <View style={styles.routeInfoItem}>
@@ -147,12 +254,12 @@ const MapDisplayScreen = ({ route, navigation }) => {
             </View>
           </View>
         </View>
-      )}
+      )} */}
       <MapView
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        zoomEnabled={true} // Allow zooming with gestures
+        zoomEnabled={true}
         scrollEnabled={true}
         showsUserLocation
         initialRegion={initialRegion}
@@ -174,7 +281,62 @@ const MapDisplayScreen = ({ route, navigation }) => {
             strokeWidth={4}
           />
         )}
+
+        {nearbyTrucks?.map((truck, index) => {
+          const truckCoords = truck?.ListingLocation?.location?.[0];
+          return (
+            <Marker
+              key={index}
+              coordinate={{
+                latitude: truckCoords?.latitude,
+                longitude: truckCoords?.longitude,
+              }}
+              title={truck?.car_name}
+              description={truck?.location}
+            >
+              <Ionicons name="car-outline" size={30} color="black" />
+            </Marker>
+          );
+        })}
       </MapView>
+
+      {/* Horizontal Scrolling Car Cards */}
+      {showCarCards && (
+        <View style={styles.carCardsContainer}>
+          <Text style={styles.carCardsTitle}>
+            Available Vehicles ({nearbyTrucks?.length})
+          </Text>
+
+          <FlatList
+            data={nearbyTrucks}
+            renderItem={renderTruckCard}
+            keyExtractor={(item, index) => `${item?.id || index}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.cardsScrollContainer}
+            ItemSeparatorComponent={() => <View style={styles.cardSeparator} />}
+            pagingEnabled={false}
+            decelerationRate="fast"
+            snapToInterval={windowWidth * 0.7 + 15}
+            snapToAlignment="start"
+          />
+
+          {selectedTruck && (
+            <View style={styles.bookingSection}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.bookButton}
+                onPress={handleBookTruck}
+              >
+                <Text style={styles.bookButtonText}>
+                  Book {selectedTruck?.car_name}
+                </Text>
+                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
     </SafeAreaViewComponent>
   );
 };
@@ -317,6 +479,56 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  selectedMarker: {
+    borderColor: "#00BFFF",
+    backgroundColor: "#E6F7FF",
+  },
+  carCardsContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#FFFFFF",
+    paddingTop: 15,
+    paddingBottom: 10,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  carCardsTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginLeft: 15,
+    marginBottom: 12,
+  },
+  cardsScrollContainer: {
+    paddingHorizontal: 15,
+  },
+  cardSeparator: {
+    width: 15,
+  },
+  bookingSection: {
+    paddingHorizontal: 15,
+    paddingTop: 12,
+  },
+  bookButton: {
+    backgroundColor: COLORS.vtbBtnColor,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  bookButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "bold",
   },
 });

@@ -77,6 +77,13 @@ export default {
           supportsPictureInPicture: true,
         },
       ],
+      [
+        "expo-location",
+        {
+          locationAlwaysAndWhenInUsePermission:
+            "Allow VTB to use your location.",
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

@@ -14,6 +14,7 @@ import DetailsOption from "../../components/common/DetailsOption";
 import FixedBottomContainer from "../../components/common/FixedBottomContainer";
 import HeaderTitle from "../../components/common/HeaderTitle";
 import SafeAreaViewComponent from "../../components/common/SafeAreaViewComponent";
+import ScrollViewSpace from "../../components/common/ScrollViewSpace";
 import FormButton from "../../components/form/FormButton";
 import { formatPriceRange } from "../../Library/Common";
 import { windowHeight, windowWidth } from "../../utils/Dimensions";
@@ -33,6 +34,10 @@ const TruckDetailsScreen = ({ route, navigation }) => {
   const transformedData = item?.pictures?.map((item) => ({
     uri: item,
   }));
+
+  const [selectedItem, setSelectedItem] = useState(
+    item?.selectedTruck ? item?.selectedTruck : item
+  );
 
   const BookTruck = async () => {
     if (userProfle) {
@@ -63,8 +68,8 @@ const TruckDetailsScreen = ({ route, navigation }) => {
             padding: 10,
           }}
         >
-          {item?.pictures?.map((cur, i) => (
-            <View>
+          {selectedItem?.pictures?.map((cur, i) => (
+            <View key={i}>
               <TouchableOpacity
                 activeOpacity={0.9}
                 style={{ flexDirection: "row", marginRight: 10 }}
@@ -72,11 +77,7 @@ const TruckDetailsScreen = ({ route, navigation }) => {
                   setIsVisible(true);
                 }}
               >
-                <Image
-                  key={i}
-                  source={{ uri: cur }}
-                  style={styles.tourdetailsImage}
-                />
+                <Image source={{ uri: cur }} style={styles.tourdetailsImage} />
               </TouchableOpacity>
               <ImageView
                 images={transformedData}
@@ -87,13 +88,13 @@ const TruckDetailsScreen = ({ route, navigation }) => {
             </View>
           ))}
         </ScrollView>
-        <DetailsOption label={"Truck Name"} value={item?.car_name} />
-        <DetailsOption label={"Truck Type"} value={item?.type} />
-        <DetailsOption label={"Truck Model"} value={item?.model} />
-        <DetailsOption label={"Location"} value={item?.location} />
+        <DetailsOption label={"Truck Name"} value={selectedItem?.car_name} />
+        <DetailsOption label={"Truck Type"} value={selectedItem?.type} />
+        <DetailsOption label={"Truck Model"} value={selectedItem?.model} />
+        <DetailsOption label={"Location"} value={selectedItem?.location} />
         <DetailsOption
           label={"Price Range"}
-          value={formatPriceRange(item?.price?.[0])}
+          value={formatPriceRange(selectedItem?.price?.[0])}
         />
 
         <View style={{ padding: 10 }}>
@@ -111,6 +112,8 @@ const TruckDetailsScreen = ({ route, navigation }) => {
             delivery experience for both inter- and intra-state bookings.
           </Text>
         </View>
+
+        <ScrollViewSpace />
       </ScrollView>
 
       <FixedBottomContainer top={1.2}>

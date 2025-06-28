@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation }) => {
   const fetchTruckListings = async () => {
     try {
       await axiosInstance({
-        url: "api/listing/all-offerings",
+        url: "api/listings/all-offerings",
         method: "GET",
       })
         .then((res) => {
@@ -201,7 +201,7 @@ const HomeScreen = ({ navigation }) => {
       />
 
       {/* Carousel section */}
-      <Carousels />
+      {/* <Carousels /> */}
 
       {/* Popular Trucks */}
       <ScrollView

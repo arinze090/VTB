@@ -91,6 +91,30 @@ const HomeStack = ({ navigation }) => (
     />
 
     <Stack.Screen
+      name="TruckDetails"
+      component={TruckDetailsScreen}
+      options={{
+        headerShown: false,
+      }}
+    />
+
+    <Stack.Screen
+      name="TruckBooking"
+      component={TruckBookingScreen}
+      options={{
+        headerShown: false,
+      }}
+    />
+
+    <Stack.Screen
+      name="TruckBookingConfirmation"
+      component={TruckBookingConfirmationScreen}
+      options={{
+        headerShown: false,
+      }}
+    />
+
+    <Stack.Screen
       name="Login"
       component={LoginScreen}
       options={{
@@ -129,14 +153,6 @@ const HomeStack = ({ navigation }) => (
     <Stack.Screen
       name="ResetPassword"
       component={ResetPassword}
-      options={{
-        headerShown: false,
-      }}
-    />
-
-    <Stack.Screen
-      name="TruckDetails"
-      component={TruckDetailsScreen}
       options={{
         headerShown: false,
       }}

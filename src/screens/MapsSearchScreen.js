@@ -139,10 +139,10 @@ const MapsSearchScreen = ({ navigation, route }) => {
       setRouteInfo({ duration, distance });
 
       console.log("routesssss", duration, distance, decoded);
-      mapRef.current.fitToCoordinates(decoded, {
-        edgePadding: { top: 60, right: 40, bottom: 60, left: 40 },
-        animated: true,
-      });
+      // mapRef.current.fitToCoordinates(decoded, {
+      //   edgePadding: { top: 60, right: 40, bottom: 60, left: 40 },
+      //   animated: true,
+      // });
 
       navigation.navigate("MapsDisplayScreen", {
         routeCoords: decoded,
@@ -226,7 +226,7 @@ const MapsSearchScreen = ({ navigation, route }) => {
       />
 
       {/* this is for displaying like how bolt display the data*/}
-      <MapView
+      {/* <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
@@ -238,13 +238,11 @@ const MapsSearchScreen = ({ navigation, route }) => {
           longitudeDelta: LONGITUDE_DELTA,
         }}
       >
-        {/* Markers */}
         <Marker coordinate={pickupCoords} title="Pickup" pinColor="pink" />
         {dropoffCoords && (
           <Marker coordinate={dropoffCoords} title="Dropoff" pinColor="red" />
         )}
 
-        {/* Polyline */}
         {routeCoords.length > 0 && (
           <Polyline
             coordinates={routeCoords}
@@ -252,7 +250,7 @@ const MapsSearchScreen = ({ navigation, route }) => {
             strokeColor="#4B4DED"
           />
         )}
-      </MapView>
+      </MapView> */}
     </SafeAreaViewComponent>
   );
 };
